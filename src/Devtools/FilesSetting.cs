@@ -12,17 +12,8 @@ public class RainStateFiles
 {
     public static void Init()
     {
-        On.DevInterface.Page.ctor += DevInterface_Page_ctor;
+        RCDEVTools.Init();
         ReadStateReadFiles.Init();
-    }
-
-    public static void DevInterface_Page_ctor(On.DevInterface.Page.orig_ctor orig, Page self, DevUI owner, string IDstring, DevUINode parentNode, string name)
-    {
-        orig(self, owner, IDstring, parentNode, name);
-
-        if(owner != null){            
-            self.subNodes.Add(new Button(owner, "RainCycles", self, new Vector2(790, 700f), 220f, "Rain Cycles"));
-        }
     }
 }
 
@@ -51,7 +42,7 @@ public class ReadStateReadFiles
             }
             else
             {
-            RSPlugin.log.LogInfo($"[Rain States] No rain state file found for room {name} at cycle {cycle}. Using default settings.");
+                RSPlugin.log.LogInfo($"[Rain States] No rain state file found for room {name} at cycle {cycle}. Using default settings.");
             }
         }
         else
@@ -65,10 +56,10 @@ public class ReadStateReadFiles
     {
         string text = AssetManager.ResolveFilePath(string.Concat(new string[]
         {
-            "World",
+            "world",
             Path.DirectorySeparatorChar.ToString(),
             Regex.Split(roomName, "_")[0],
-            "-Rooms",
+            "-rooms",
             Path.DirectorySeparatorChar.ToString(),
             "RainCycles",
             Path.DirectorySeparatorChar.ToString(),
@@ -79,9 +70,12 @@ public class ReadStateReadFiles
 
         if (File.Exists(text))
         {
-            UnityEngine.Debug.Log($"[Rain States] Found rain state file for {roomName} at cycle {cycle}: {text}");
             RSPlugin.log.LogInfo($"[Rain States] Found rain state file for {roomName} at cycle {cycle}: {text}");
             return text;
+        }
+        else
+        {
+            RSPlugin.log.LogInfo($"[Rain States] No rain state file found for {roomName} at cycle {cycle}.");
         }
 
         return null;
