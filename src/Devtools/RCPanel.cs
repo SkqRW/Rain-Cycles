@@ -12,14 +12,18 @@ public class RCPanel : Panel, IDevUISignals
     private const float MARGIN = 5f;
     private const float BUTTONS_ROW_Y = 80f;
     private const float MIN_PANEL_WIDTH = 200f;
+
+    private int buttonSelected = 1;
     
     public RCPanel(DevUI owner, string IDstring, DevUINode parentNode, Vector2 pos, Vector2 size, string title) : base(owner, IDstring, parentNode, pos, size, title)
     {
         int n = ReadStateReadFiles.CountRainStateFiles(owner.room?.abstractRoom?.name);
+        int cycle = owner.room.game.GetStorySession.saveState.cycleNumber; //can't open in arena
+        buttonSelected = n > 0 ? (cycle % n): 0;
         UnityEngine.Debug.Log($"[Rain Cycles] Found {n} rain state files for room {owner.room?.abstractRoom?.name}");
         for (int i = 1; i <= n; i++)
         {
-            subNodes.Add(new SelectButton(owner, $"RC_{i}", this, new Vector2(MARGIN, BUTTONS_ROW_Y), BUTTON_WIDTH, i.ToString(), i == (i % n) + 1));
+            subNodes.Add(new SelectButton(owner, $"RC_{i}", this, new Vector2(MARGIN, BUTTONS_ROW_Y), BUTTON_WIDTH, i.ToString(), false));
         }
         subNodes.Add(new Button(owner, "RC_Plus", this, new Vector2(MARGIN, BUTTONS_ROW_Y), BUTTON_WIDTH, "+"));
         subNodes.Add(new Button(owner, "RC_save", this, new Vector2(MARGIN, MARGIN), 190f, "Save"));
@@ -48,7 +52,7 @@ public class RCPanel : Panel, IDevUISignals
         }   
     }
     
-    private void ReorganizeButtons()
+    private void ReorganizeButtons(bool newButton = false)
     {
         var selectButtons = subNodes.Where(n => n is SelectButton).ToList();
         var plusButton = subNodes.FirstOrDefault(n => n.IDstring == "RC_Plus");
@@ -71,6 +75,7 @@ public class RCPanel : Panel, IDevUISignals
         
         // Position the SelectButtons in rows
         int totalButtons = selectButtons.Count;
+        int ButtonActive = newButton ? totalButtons : this.buttonSelected;
         for (int i = 0; i < totalButtons; i++)
         {
             int row = i / buttonsPerRow;
@@ -80,8 +85,12 @@ public class RCPanel : Panel, IDevUISignals
             float yPos = BUTTONS_ROW_Y - row * (BUTTON_WIDTH + BUTTON_SPACING);
             
             (selectButtons[i] as PositionedDevUINode).Move(new Vector2(xPos, yPos));
-            if(i == totalButtons -1)
+            if(i == ButtonActive){
                 (selectButtons[i] as SelectButton).Select();
+                UnityEngine.Debug.Log($"[Rain Cycles] Selected button {i}, {ButtonActive}");  
+            }
+                UnityEngine.Debug.Log($"[Rain Cycles] Selected button {i}, {ButtonActive}");  
+
         }
         
         if (plusButton != null)
@@ -95,8 +104,6 @@ public class RCPanel : Panel, IDevUISignals
             
             (plusButton as PositionedDevUINode).Move(new Vector2(xPos, yPos));
         }
-
-        
     }
 }
 
