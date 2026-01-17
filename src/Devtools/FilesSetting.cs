@@ -129,5 +129,34 @@ public class ReadStateReadFiles
 
         return filePath;
     }
+
+    internal static string CreateNewRainStateFile(string name, int buttonCount, Room room)
+    {
+        string directoryPath = AssetManager.ResolveFilePath(string.Concat(new string[]
+        {
+            "World",
+            Path.DirectorySeparatorChar.ToString(),
+            Regex.Split(name, "_")[0],
+            "-Rooms",
+            Path.DirectorySeparatorChar.ToString(),
+            "RainCycles"
+        }));
+
+        if (!Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
+
+        string filePath = Path.Combine(directoryPath, $"{name}_settings_{buttonCount}.txt");
+
+        // Copy the same setting file that the room is using
+        room.roomSettings.filePath = filePath;
+        room.roomSettings.Save();
+        
+
+
+        UnityEngine.Debug.Log($"[Rain States] Created new rain state file: {filePath}");
+        return filePath;
+    }
 }
 

@@ -13,7 +13,7 @@ public class RCPanel : Panel, IDevUISignals
     private const float BUTTONS_ROW_Y = 80f;
     private const float MIN_PANEL_WIDTH = 200f;
 
-    private int buttonSelected = 1;
+    public static int buttonSelected = 1;
     
     public RCPanel(DevUI owner, string IDstring, DevUINode parentNode, Vector2 pos, Vector2 size, string title) : base(owner, IDstring, parentNode, pos, size, title)
     {
@@ -26,7 +26,7 @@ public class RCPanel : Panel, IDevUISignals
             subNodes.Add(new SelectButton(owner, $"RC_{i}", this, new Vector2(MARGIN, BUTTONS_ROW_Y), BUTTON_WIDTH, i.ToString(), false));
         }
         subNodes.Add(new Button(owner, "RC_Plus", this, new Vector2(MARGIN, BUTTONS_ROW_Y), BUTTON_WIDTH, "+"));
-        subNodes.Add(new Button(owner, "RC_save", this, new Vector2(MARGIN, MARGIN), 190f, "Save"));
+        //subNodes.Add(new Button(owner, "RC_save", this, new Vector2(MARGIN, MARGIN), 190f, "Save"));
         
         ReorganizeButtons();
     }
@@ -39,6 +39,7 @@ public class RCPanel : Panel, IDevUISignals
             {
                 int buttonCount = subNodes.Count(n => n is SelectButton) + 1;
                 subNodes.Add(new SelectButton(owner, $"RC_{buttonCount}", this, new Vector2(MARGIN, BUTTONS_ROW_Y), BUTTON_WIDTH, buttonCount.ToString(), false));
+                string path = ReadStateReadFiles.CreateNewRainStateFile(owner.room?.abstractRoom?.name, buttonCount, owner.room);
                 ReorganizeButtons();
             }
 
@@ -47,6 +48,14 @@ public class RCPanel : Panel, IDevUISignals
                 int buttonCount = int.Parse(sender.IDstring.Split('_')[1]);
                 owner.room.roomSettings.filePath = ReadStateReadFiles.GetRainStateSettingsFile(owner.room?.abstractRoom?.name, buttonCount);
                 owner.room.roomSettings.Load((SlugcatStats.Timeline)null);
+                foreach (var node in subNodes)
+                {
+                    node.Refresh();
+                }
+                parentNode?.Refresh();
+                this.owner.room.game.cameras[0].ApplyEffectColorsToAllPaletteTextures(base.RoomSettings.EffectColorA, base.RoomSettings.EffectColorB);
+                this.owner.room.game.cameras[0].ChangeMainPalette(base.RoomSettings.Palette);
+                owner.room.game.cameras[0].ApplyFade();
                 UnityEngine.Debug.Log($"[Rain Cycles] Loaded rain state file for room {owner.room?.abstractRoom?.name} at index {buttonCount}");
             }
         }   
@@ -75,7 +84,7 @@ public class RCPanel : Panel, IDevUISignals
         
         // Position the SelectButtons in rows
         int totalButtons = selectButtons.Count;
-        int ButtonActive = newButton ? totalButtons : this.buttonSelected;
+        int ButtonActive = newButton ? totalButtons : RCPanel.buttonSelected;
         for (int i = 0; i < totalButtons; i++)
         {
             int row = i / buttonsPerRow;
