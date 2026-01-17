@@ -24,8 +24,6 @@ public class ReadStateReadFiles
         On.RoomSettings.ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame += RoomSettings_ctor;
     }
 
-
-
     private static void RoomSettings_ctor(On.RoomSettings.orig_ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame orig, RoomSettings self, Room room, string name, Region region, bool template, bool firstTemplate, SlugcatStats.Timeline timelinePoint, RainWorldGame game)
     {
         orig(self, room, name, region, template, firstTemplate, timelinePoint, game);
@@ -42,7 +40,7 @@ public class ReadStateReadFiles
             }
             else
             {
-                RSPlugin.log.LogInfo($"[Rain States] No rain state file found for room {name} at cycle {cycle}. Using default settings.");
+            RSPlugin.log.LogInfo($"[Rain States] No rain state file found for room {name} at cycle {cycle}. Using default settings.");
             }
         }
         else
@@ -56,10 +54,10 @@ public class ReadStateReadFiles
     {
         string text = AssetManager.ResolveFilePath(string.Concat(new string[]
         {
-            "world",
+            "World",
             Path.DirectorySeparatorChar.ToString(),
             Regex.Split(roomName, "_")[0],
-            "-rooms",
+            "-Rooms",
             Path.DirectorySeparatorChar.ToString(),
             "RainCycles",
             Path.DirectorySeparatorChar.ToString(),
@@ -70,12 +68,9 @@ public class ReadStateReadFiles
 
         if (File.Exists(text))
         {
+            UnityEngine.Debug.Log($"[Rain States] Found rain state file for {roomName} at cycle {cycle}: {text}");
             RSPlugin.log.LogInfo($"[Rain States] Found rain state file for {roomName} at cycle {cycle}: {text}");
             return text;
-        }
-        else
-        {
-            RSPlugin.log.LogInfo($"[Rain States] No rain state file found for {roomName} at cycle {cycle}.");
         }
 
         return null;

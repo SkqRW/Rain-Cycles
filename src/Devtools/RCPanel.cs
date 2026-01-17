@@ -1,14 +1,93 @@
+using System;
+using System.Dynamic;
+using System.Linq;
 using DevInterface;
 
 namespace FilesSetting;
 
-public class RCPanel : Panel
+public class RCPanel : Panel, IDevUISignals
 {
+    private const float BUTTON_WIDTH = 30f;
+    private const float BUTTON_SPACING = 5f;
+    private const float MARGIN = 5f;
+    private const float BUTTONS_ROW_Y = 80f;
+    private const float MIN_PANEL_WIDTH = 200f;
+    
     public RCPanel(DevUI owner, string IDstring, DevUINode parentNode, Vector2 pos, Vector2 size, string title) : base(owner, IDstring, parentNode, pos, size, title)
     {
-        subNodes.Add(new Button(owner, "RC_1", this, new Vector2(5f, 80f), 30f, "1"));
-        subNodes.Add(new Button(owner, "RC_2", this, new Vector2(40f, 80f), 30f, "2"));
-        subNodes.Add(new Button(owner, "RC_Plus", this, new Vector2(75f, 80f), 30f, "+"));
-        subNodes.Add(new Button(owner, "RC_save", this, new Vector2(5f, 5f), 190f, "Save"));
+        UnityEngine.Debug.Log($"[Rain Cycles] Initializing RCPanel for room {owner.room?.abstractRoom?.name}");
+        for (int i = 1; i <= 2; i++)
+        {
+            subNodes.Add(new SelectButton(owner, $"RC_{i}", this, new Vector2(MARGIN, BUTTONS_ROW_Y), BUTTON_WIDTH, i.ToString(), i == 1));
+        }
+        subNodes.Add(new Button(owner, "RC_Plus", this, new Vector2(MARGIN, BUTTONS_ROW_Y), BUTTON_WIDTH, "+"));
+        subNodes.Add(new Button(owner, "RC_save", this, new Vector2(MARGIN, MARGIN), 190f, "Save"));
+        
+        ReorganizeButtons();
+    }
+
+    public void Signal(DevUISignalType type, DevUINode sender, string message)
+    {
+        if (type == DevUISignalType.ButtonClick)
+        {
+            if (sender.IDstring == "RC_Plus")
+            {
+                int buttonCount = subNodes.Count(n => n is SelectButton) + 1;
+                subNodes.Add(new SelectButton(owner, $"RC_{buttonCount}", this, new Vector2(MARGIN, BUTTONS_ROW_Y), BUTTON_WIDTH, buttonCount.ToString(), false));
+                ReorganizeButtons();
+            }
+        }   
+    }
+    
+    private void ReorganizeButtons()
+    {
+        var selectButtons = subNodes.Where(n => n is SelectButton).ToList();
+        var plusButton = subNodes.FirstOrDefault(n => n.IDstring == "RC_Plus");
+        
+        // Calculate number of buttons per row
+        int buttonsPerRow = (int)((this.size.x - 2 * MARGIN + BUTTON_SPACING) / (BUTTON_WIDTH + BUTTON_SPACING));
+        buttonsPerRow = Math.Max(1, buttonsPerRow);
+
+        /*
+        // Look if should expand panel height
+        int totalRows = (int)Math.Ceiling((selectButtons.Count + 1) / (float)buttonsPerRow);
+        float requiredHeight = MARGIN + (totalRows * (BUTTON_WIDTH + BUTTON_SPACING)) + MARGIN + BUTTON_WIDTH + MARGIN;
+        if (requiredHeight > this.size.y)
+        {
+            this.size = new Vector2(this.size.x, requiredHeight);
+            this.pos = new Vector2(this.pos.x, this.pos.y - 30f);
+            this.Refresh();
+        }
+        */
+        
+        // Position the SelectButtons in rows
+        int totalButtons = selectButtons.Count;
+        for (int i = 0; i < totalButtons; i++)
+        {
+            int row = i / buttonsPerRow;
+            int col = i % buttonsPerRow;
+            
+            float xPos = MARGIN + col * (BUTTON_WIDTH + BUTTON_SPACING);
+            float yPos = BUTTONS_ROW_Y - row * (BUTTON_WIDTH + BUTTON_SPACING);
+            
+            (selectButtons[i] as PositionedDevUINode).Move(new Vector2(xPos, yPos));
+            if(i == totalButtons -1)
+                (selectButtons[i] as SelectButton).Select();
+        }
+        
+        if (plusButton != null)
+        {
+            int totalIndex = totalButtons;
+            int row = totalIndex / buttonsPerRow;
+            int col = totalIndex % buttonsPerRow;
+            
+            float xPos = MARGIN + col * (BUTTON_WIDTH + BUTTON_SPACING);
+            float yPos = BUTTONS_ROW_Y - row * (BUTTON_WIDTH + BUTTON_SPACING);
+            
+            (plusButton as PositionedDevUINode).Move(new Vector2(xPos, yPos));
+        }
+
+        
     }
 }
+

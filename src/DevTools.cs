@@ -38,23 +38,6 @@ public partial class DevTools
             return;
         }
 
-        if (Input.GetKey(KeyCode.P))
-        {
-            self.abstractCreature.world.game.cameras[0].ApplyEffectColorsToAllPaletteTextures(colorIndex, -1);
-            PDEBUG.Log($"Applied effect palette index: {colorIndex}");
-            colorIndex++;
-            SetDevTimer(1);
-        }
-        if (Input.GetKey(KeyCode.F))
-        {
-
-            SetDevTimer(1);
-        }
-        if (Input.GetKey(KeyCode.T))
-        {
-
-            SetDevTimer(1);
-        }
     }
 
     private static void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
