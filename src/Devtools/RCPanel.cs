@@ -15,10 +15,11 @@ public class RCPanel : Panel, IDevUISignals
     
     public RCPanel(DevUI owner, string IDstring, DevUINode parentNode, Vector2 pos, Vector2 size, string title) : base(owner, IDstring, parentNode, pos, size, title)
     {
-        UnityEngine.Debug.Log($"[Rain Cycles] Initializing RCPanel for room {owner.room?.abstractRoom?.name}");
-        for (int i = 1; i <= 2; i++)
+        int n = ReadStateReadFiles.CountRainStateFiles(owner.room?.abstractRoom?.name);
+        UnityEngine.Debug.Log($"[Rain Cycles] Found {n} rain state files for room {owner.room?.abstractRoom?.name}");
+        for (int i = 1; i <= n; i++)
         {
-            subNodes.Add(new SelectButton(owner, $"RC_{i}", this, new Vector2(MARGIN, BUTTONS_ROW_Y), BUTTON_WIDTH, i.ToString(), i == 1));
+            subNodes.Add(new SelectButton(owner, $"RC_{i}", this, new Vector2(MARGIN, BUTTONS_ROW_Y), BUTTON_WIDTH, i.ToString(), i == (i % n) + 1));
         }
         subNodes.Add(new Button(owner, "RC_Plus", this, new Vector2(MARGIN, BUTTONS_ROW_Y), BUTTON_WIDTH, "+"));
         subNodes.Add(new Button(owner, "RC_save", this, new Vector2(MARGIN, MARGIN), 190f, "Save"));
@@ -35,6 +36,14 @@ public class RCPanel : Panel, IDevUISignals
                 int buttonCount = subNodes.Count(n => n is SelectButton) + 1;
                 subNodes.Add(new SelectButton(owner, $"RC_{buttonCount}", this, new Vector2(MARGIN, BUTTONS_ROW_Y), BUTTON_WIDTH, buttonCount.ToString(), false));
                 ReorganizeButtons();
+            }
+
+            if (sender.IDstring.StartsWith("RC_"))
+            {
+                int buttonCount = int.Parse(sender.IDstring.Split('_')[1]);
+                owner.room.roomSettings.filePath = ReadStateReadFiles.GetRainStateSettingsFile(owner.room?.abstractRoom?.name, buttonCount);
+                owner.room.roomSettings.Load((SlugcatStats.Timeline)null);
+                UnityEngine.Debug.Log($"[Rain Cycles] Loaded rain state file for room {owner.room?.abstractRoom?.name} at index {buttonCount}");
             }
         }   
     }

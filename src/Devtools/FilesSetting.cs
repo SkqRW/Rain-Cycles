@@ -75,5 +75,59 @@ public class ReadStateReadFiles
 
         return null;
     }
+
+    // TODO: Improve this
+    public static int CountRainStateFiles(string roomName)
+    {
+        int count = 0;
+        for (int i = 1; i <= 5; i++)
+        {
+            string filePath = AssetManager.ResolveFilePath(string.Concat(new string[]
+            {
+                "World",
+                Path.DirectorySeparatorChar.ToString(),
+                Regex.Split(roomName, "_")[0],
+                "-Rooms",
+                Path.DirectorySeparatorChar.ToString(),
+                "RainCycles",
+                Path.DirectorySeparatorChar.ToString(),
+                roomName,
+                "_settings_",
+                i.ToString() + ".txt"
+            }));
+
+            if (File.Exists(filePath))
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public static string GetRainStateSettingsFile(string roomName, int number)
+    {
+        string filePath = AssetManager.ResolveFilePath(string.Concat(new string[]
+            {
+                "World",
+                Path.DirectorySeparatorChar.ToString(),
+                Regex.Split(roomName, "_")[0],
+                "-Rooms",
+                Path.DirectorySeparatorChar.ToString(),
+                "RainCycles",
+                Path.DirectorySeparatorChar.ToString(),
+                roomName,
+                "_settings_",
+                number.ToString() + ".txt"
+            }));
+
+
+        if(!File.Exists(filePath))
+        {
+            UnityEngine.Debug.Log($"[Rain States] Rain state settings file not found: {filePath}");
+            return null;
+        }
+
+        return filePath;
+    }
 }
 
